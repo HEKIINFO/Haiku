@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Googleスプレッドシート検索</title>
+    <title>河東碧梧桐俳句検索</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f4f4f4;
+            background-color: #edf5f4;
         }
         .container {
             max-width: 800px;
@@ -36,7 +36,7 @@
         }
         .search-form button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #2ea694;
             color: white;
             border: none;
             border-radius: 0 4px 4px 0;
@@ -44,7 +44,7 @@
             font-size: 16px;
         }
         .search-form button:hover {
-            background-color: #0056b3;
+            background-color: #65d6c5;
         }
         #results-container {
             border-top: 1px solid #eee;
@@ -69,11 +69,18 @@
             margin-bottom: 10px;
         }
         .matched-cell {
-            background-color: #e6f7ff; /* 薄い青でハイライト */
+            background-color: #e6faf7; /* 薄い緑でハイライト */
             padding: 8px;
             margin-bottom: 8px;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #52ccba;
             font-size: 0.95em;
+
+            /* ★★★ここから追加・変更★★★ */
+            display: flex; /* Flexboxを有効にする */
+            align-items: center; /* 縦方向の中央揃え */
+            justify-content: space-between; /* 子要素を両端に寄せる */
+            /* ★★★ここまで追加・変更★★★ */
+
         }
         .matched-cell strong {
             color: #0056b3;
@@ -98,23 +105,56 @@
             color: #666;
             margin-top: 20px;
         }
+        /* タイトル下の説明文のスタイル（中央寄せ） */
+        .container > p { /* 直接.containerの子要素のpタグ（説明文）に適用 */
+            font-size: 0.95em;
+            color: #666;
+            margin-top: -15px;
+            margin-bottom: 30px;
+            text-align: center; /* 中央寄せを維持 */
+            line-height: 1.5;
+        }
+
+        /* 行全体のデータ表示のスタイル（左詰め） */
+        .full-row-data p {
+            text-align: left; /* 左詰め */
+            margin-left: 0; /* 必要に応じて左マージンを調整 */
+            padding-left: 0; /* 必要に応じて左パディングを調整 */
+        }
+
+        /* コピーボタン */
+        .copy-button {
+            //margin-left: 10px; /* 左側に少しスペースを空ける */
+            padding: 5px 10px;
+            background-color: #008080; /* 緑系の色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em; /* フォントサイズを小さく */
+            transition: background-color 0.2s ease; /* ホバー時のアニメーション */
+        }
+
+        .copy-button:hover {
+            background-color: #2f4f4f; /* ホバー時の色 */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>碧梧桐俳句検索</h1>
         <p>
-            出典：『碧梧桐全句集』河東 碧梧桐【著】/栗田 靖【編】,蝸牛社, 1992<br>
-            入力した単語が含まれる俳句を検索します。
+            入力した単語が含まれる俳句を検索します。<br>
+	    出典：『碧梧桐全句集』河東 碧梧桐 著/栗田 靖 編,蝸牛社,1992
+            
         </p>
         <form id="searchForm" class="search-form">
             <input type="text" id="searchInput" placeholder="キーワードを入力..." aria-label="検索キーワード">
             <button type="submit">検索</button>
         </form>
 
-        <div id="results-container">
-            <h2>検索結果</h2>
-            <div id="searchResults">
+	<div id="results-container">
+            <h2>検索結果 (<span id="resultCount">0</span>句)</h2> <div id="searchResults">
                 <p class="no-results">検索結果はここに表示されます。</p>
             </div>
         </div>
@@ -122,7 +162,7 @@
         <div id="errorMessage" class="error-message" style="display: none;"></div>
     </div>
 
-    <script>
+<script>
         // ★★★ ここにGoogle Apps Scriptで取得した「ウェブアプリのURL」を貼り付けてください ★★★
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85XgkyyK6pSzrpm9j63T/exec';
 
@@ -133,9 +173,11 @@
             const searchTerm = searchInput.value.trim();
             const searchResultsDiv = document.getElementById('searchResults');
             const errorMessageDiv = document.getElementById('errorMessage');
+            const resultCountSpan = document.getElementById('resultCount'); // 追加: 件数表示用の要素を取得
 
             searchResultsDiv.innerHTML = ''; // 以前の結果をクリア
             errorMessageDiv.style.display = 'none'; // エラーメッセージを隠す
+            resultCountSpan.textContent = '0'; // 追加: 件数をリセット
 
             if (!searchTerm) {
                 searchResultsDiv.innerHTML = '<p class="no-results">検索キーワードを入力してください。</p>';
@@ -157,11 +199,14 @@
                     errorMessageDiv.textContent = `エラー: ${data.error}`;
                     errorMessageDiv.style.display = 'block';
                     searchResultsDiv.innerHTML = ''; // 結果をクリア
+                    resultCountSpan.textContent = '0'; // 追加: 件数をリセット
                     return;
                 }
 
+                resultCountSpan.textContent = data.length; // 追加: 検索結果の件数を表示
+
                 if (data.length === 0) {
-                    searchResultsDiv.innerHTML = '<p class="no-results">一致するデータが見つかりませんでした。</p>';
+                    searchResultsDiv.innerHTML = '<p class="no-results">一致するデータは見つかりませんでした。</p>'; // メッセージを修正
                 } else {
                     data.forEach(item => {
                         const itemDiv = document.createElement('div');
@@ -169,27 +214,65 @@
                         
                         // 一致したセルを表示
                         const matchedCellsSection = document.createElement('div');
-                        matchedCellsSection.innerHTML = '<h3>一致したセル:</h3>';
-                        item.matchedCells.forEach(cell => {
+                        // matchedCellsSection.innerHTML = '<h3>一致したセル:</h3>'; // この行は既に削除済み
+item.matchedCells.forEach(cell => {
                             const cellDiv = document.createElement('div');
                             cellDiv.classList.add('matched-cell');
-                            cellDiv.innerHTML = `<strong>${cell.header}</strong> (行 ${cell.rowIndex}): ${cell.value}`;
+
+                            // セルの中身を表示
+                            const cellContent = document.createElement('span'); // spanタグで内容を囲む
+                            cellContent.innerHTML = `<strong>${cell.header}</strong>${cell.value ? ' ' + cell.value : ''}`;
+                            cellDiv.appendChild(cellContent);
+
+                            // コピーボタンを作成
+                            const copyButton = document.createElement('button');
+                            copyButton.textContent = 'コピー';
+                            copyButton.classList.add('copy-button'); // CSSのためのクラスを追加
+                            copyButton.onclick = async () => {
+                                try {
+                                    // navigator.clipboard.writeText を使用してクリップボードにコピー
+                                    await navigator.clipboard.writeText(cell.value);
+                                    copyButton.textContent = 'コピー済み！'; // コピー成功時にボタンのテキストを変更
+                                    setTimeout(() => {
+                                        copyButton.textContent = 'コピー'; // 数秒後に元に戻す
+                                    }, 1500);
+                                } catch (err) {
+                                    console.error('クリップボードへのコピーに失敗しました:', err);
+                                    alert('コピーに失敗しました。お使いのブラウザでは自動コピーが許可されていないか、エラーが発生しました。');
+                                }
+                            };
+                            cellDiv.appendChild(copyButton);
+
                             matchedCellsSection.appendChild(cellDiv);
                         });
-                        itemDiv.appendChild(matchedCellsSection);
+                        // 一致するセルが1つ以上ある場合のみ、セクションを追加
+                        if (item.matchedCells.length > 0) {
+                            itemDiv.appendChild(matchedCellsSection);
+                        }
+
 
                         // 行全体のデータを表示
                         const fullRowSection = document.createElement('div');
                         fullRowSection.classList.add('full-row-data');
-                        fullRowSection.innerHTML = '<h4>行全体のデータ:</h4>';
-                        for (const key in item.fullRow) {
-                            if (Object.hasOwnProperty.call(item.fullRow, key)) {
+                        // fullRowSection.innerHTML = '<h4>行全体のデータ:</h4>'; // この行は既に削除済み
+                        
+                        // 表示したい列のヘッダーを配列で定義
+                        const columnsToDisplay = ['詠まれた年','前書き,場所など','季節']; // ここはあなたの実際のヘッダー名に置き換えてください！
+
+                        let hasFullRowDataToDisplay = false; // 表示するデータがあるかどうかのフラグ
+                        columnsToDisplay.forEach(header => {
+                            if (item.fullRow.hasOwnProperty(header)) {
                                 const p = document.createElement('p');
-                                p.textContent = `${key}: ${item.fullRow[key]}`;
+                                p.textContent = `${header}: ${item.fullRow[header]}`;
                                 fullRowSection.appendChild(p);
+                                hasFullRowDataToDisplay = true;
                             }
+                        });
+                        // 表示するデータがある場合のみ、セクションを追加
+                        if (hasFullRowDataToDisplay) {
+                            itemDiv.appendChild(fullRowSection);
                         }
-                        itemDiv.appendChild(fullRowSection);
+                        
 
                         searchResultsDiv.appendChild(itemDiv);
                     });
@@ -200,6 +283,7 @@
                 errorMessageDiv.textContent = `検索中にエラーが発生しました: ${error.message}`;
                 errorMessageDiv.style.display = 'block';
                 searchResultsDiv.innerHTML = ''; // 結果をクリア
+                resultCountSpan.textContent = '0'; // 追加: 件数をリセット
             }
         });
     </script>
