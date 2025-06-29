@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Googleスプレッドシート検索</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .search-form {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        .search-form input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        .search-form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .search-form button:hover {
+            background-color: #0056b3;
+        }
+        #results-container {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        #results-container h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .result-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .result-item h3 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .matched-cell {
+            background-color: #e6f7ff; /* 薄い青でハイライト */
+            padding: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #007bff;
+            font-size: 0.95em;
+        }
+        .matched-cell strong {
+            color: #0056b3;
+        }
+        .full-row-data {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .full-row-data p {
+            margin: 3px 0;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .no-results {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>碧梧桐俳句検索</h1>
+        <p>
+            出典：『碧梧桐全句集』河東 碧梧桐【著】/栗田 靖【編】,蝸牛社, 1992<br>
+            入力した単語が含まれる俳句を検索します。
+        </p>
+        <form id="searchForm" class="search-form">
+            <input type="text" id="searchInput" placeholder="キーワードを入力..." aria-label="検索キーワード">
+            <button type="submit">検索</button>
+        </form>
+
+        <div id="results-container">
+            <h2>検索結果</h2>
+            <div id="searchResults">
+                <p class="no-results">検索結果はここに表示されます。</p>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        // ★★★ ここにGoogle Apps Scriptで取得した「ウェブアプリのURL」を貼り付けてください ★★★
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85XgkyyK6pSzrpm9j63T/exec';
+
+        document.getElementById('searchForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // フォームのデフォルト送信を防ぐ
+
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.trim();
+            const searchResultsDiv = document.getElementById('searchResults');
+            const errorMessageDiv = document.getElementById('errorMessage');
+
+            searchResultsDiv.innerHTML = ''; // 以前の結果をクリア
+            errorMessageDiv.style.display = 'none'; // エラーメッセージを隠す
+
+            if (!searchTerm) {
+                searchResultsDiv.innerHTML = '<p class="no-results">検索キーワードを入力してください。</p>';
+                return;
+            }
+
+            searchResultsDiv.innerHTML = '<p class="no-results">検索中...</p>'; // ローディング表示
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?q=${encodeURIComponent(searchTerm)}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー！ステータス: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    errorMessageDiv.textContent = `エラー: ${data.error}`;
+                    errorMessageDiv.style.display = 'block';
+                    searchResultsDiv.innerHTML = ''; // 結果をクリア
+                    return;
+                }
+
+                if (data.length === 0) {
+                    searchResultsDiv.innerHTML = '<p class="no-results">一致するデータが見つかりませんでした。</p>';
+                } else {
+                    data.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.classList.add('result-item');
+                        
+                        // 一致したセルを表示
+                        const matchedCellsSection = document.createElement('div');
+                        matchedCellsSection.innerHTML = '<h3>一致したセル:</h3>';
+                        item.matchedCells.forEach(cell => {
+                            const cellDiv = document.createElement('div');
+                            cellDiv.classList.add('matched-cell');
+                            cellDiv.innerHTML = `<strong>${cell.header}</strong> (行 ${cell.rowIndex}): ${cell.value}`;
+                            matchedCellsSection.appendChild(cellDiv);
+                        });
+                        itemDiv.appendChild(matchedCellsSection);
+
+                        // 行全体のデータを表示
+                        const fullRowSection = document.createElement('div');
+                        fullRowSection.classList.add('full-row-data');
+                        fullRowSection.innerHTML = '<h4>行全体のデータ:</h4>';
+                        for (const key in item.fullRow) {
+                            if (Object.hasOwnProperty.call(item.fullRow, key)) {
+                                const p = document.createElement('p');
+                                p.textContent = `${key}: ${item.fullRow[key]}`;
+                                fullRowSection.appendChild(p);
+                            }
+                        }
+                        itemDiv.appendChild(fullRowSection);
+
+                        searchResultsDiv.appendChild(itemDiv);
+                    });
+                }
+
+            } catch (error) {
+                console.error('検索エラー:', error);
+                errorMessageDiv.textContent = `検索中にエラーが発生しました: ${error.message}`;
+                errorMessageDiv.style.display = 'block';
+                searchResultsDiv.innerHTML = ''; // 結果をクリア
+            }
+        });
+    </script>
+</body>
+</html>
