@@ -23,7 +23,13 @@
             color: #333;
             text-align: center;
             margin-bottom: 30px;
-	　　white-space: nowrap;
+            font-size: 2.0em; /* デフォルトサイズ */
+        }
+        /* スマートフォンなどの小さな画面の場合 */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em; /* さらに小さくする */
+            }
         }
         .container > p { /* タイトル下の説明文のスタイル（中央寄せ） */
             font-size: 0.95em;
@@ -47,7 +53,7 @@
         /* 検索入力欄のフォーカス時のスタイルをリセット/変更 */
         .search-form input[type="text"]:focus {
             outline: none;
-            box-shadow: none; /* または '0 0 0 0.2rem rgba(0, 123, 255, 0.25);' など */
+            box-shadow: none;
             border-color: #007bff;
         }
         .search-form button {
@@ -62,14 +68,39 @@
         .search-form button:hover {
             background-color: #195c53;
         }
+
+        /* 検索結果見出しとボタンをまとめるスタイル */
+        .results-heading-row {
+            display: flex; /* Flexboxを有効にする */
+            justify-content: space-between; /* 要素を両端に配置 */
+            align-items: center; /* 垂直方向の中央揃え */
+            margin-bottom: 15px; /* 下の検索結果との余白 */
+            padding-top: 20px; /* 上部の余白 */
+            border-top: 1px solid #eee; /* 上部に区切り線 */
+        }
+        .results-heading-row h2 {
+             color: #555;
+             margin-bottom: 0; /* h2のデフォルト下マージンをリセット */
+        }
+
         #results-container {
-            border-top: 1px solid #eee;
-            padding-top: 20px;
+            /* padding-top: 20px; /* この行は .results-heading-row に移動したので、削除またはコメントアウト */
+            padding-top: 0; /* .results-heading-row で既に余白と線があるので、ここでは0で良い */
         }
-        #results-container h2 {
-            color: #555;
-            margin-bottom: 15px;
+
+        #selectAllButton {
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap; /* ボタン内のテキストが改行されないように */
         }
+        #selectAllButton:hover {
+            background-color: #5a6268;
+        }
+
         .result-item {
             background-color: #f9f9f9;
             border: 1px solid #eee;
@@ -78,46 +109,42 @@
             border-radius: 5px;
         }
 	.matched-cell {
-            /* background-color: #e6f7ff; /* ← 既存のこの行は削除またはコメントアウト */
-            /* border-left: 4px solid #007bff; /* ← 既存のこの行は削除またはコメントアウト */
-            border-left-width: 4px; /* ボーダーの幅は共通で設定 */
-            border-left-style: solid; /* ボーダーのスタイルは共通で設定 */
+            border-left-width: 4px;
+            border-left-style: solid;
             padding: 8px;
             margin-bottom: 8px;
-            font-size: 0.9em; /* 修正済み: 文字サイズを小さく */
+            font-size: 0.9em;
 
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* 左寄せに変更 */
-            gap: 10px; /* チェックボックスとテキストの間にスペース */
+            justify-content: flex-start;
+            gap: 10px;
         }
 
-        /* ここから追加: 各季節によるセルの背景色と左ボーダー色の変更 */
         .matched-cell.season-shinnen {
-            background-color: #ffe0e0; /* 薄い赤 */
-            border-left-color: #ff0000; /* 赤 */
+            background-color: #ffe0e0;
+            border-left-color: #ff0000;
         }
         .matched-cell.season-haru {
-            background-color: #ffe6f2; /* 薄いピンク */
-            border-left-color: #ff69b4; /* ピンク */
+            background-color: #ffe6f2;
+            border-left-color: #ff69b4;
         }
         .matched-cell.season-natsu {
-            background-color: #e0f2ff; /* 薄い青 */
-            border-left-color: #007bff; /* 青 */
+            background-color: #e0f2ff;
+            border-left-color: #007bff;
         }
         .matched-cell.season-aki {
-            background-color: #fff0e0; /* 薄いオレンジ */
-            border-left-color: #ffa500; /* オレンジ */
+            background-color: #fff0e0;
+            border-left-color: #ffa500;
         }
         .matched-cell.season-fuyu {
-            background-color: #e0ffe0; /* 薄い緑 */
-            border-left-color: #008000; /* 緑 */
+            background-color: #e0ffe0;
+            border-left-color: #008000;
         }
         .matched-cell.season-default {
-            background-color: #f0f0f0; /* 薄い灰色 */
-            border-left-color: #808080; /* 灰色 */
+            background-color: #f0f0f0;
+            border-left-color: #808080;
         }
-        /* ★★★ここまで追加★★★ */
 
         .matched-cell strong {
             color: #0056b3;
@@ -130,11 +157,11 @@
             color: #666;
         }
 	.full-row-data p {
-            text-align: left; /* 左詰め */
+            text-align: left;
             margin-left: 0;
             padding-left: 0;
-            margin-bottom: 0px; /* ★この行を追加または修正します★ (お好みに合わせて調整) */
-            line-height: 1.0; なども検討できますが、まずはmargin-bottomで試してください */
+            margin-bottom: 0px;
+            line-height: 1.0;
         }
         .error-message {
             color: red;
@@ -147,41 +174,37 @@
             margin-top: 20px;
         }
 
-        /* ★★★ 新しく追加するCSS: 固定コピーボタン ★★★ */
         #fixed-copy-button-container {
-            position: fixed; /* 画面に固定 */
-            bottom: 20px; /* 下から20px */
-            right: 20px; /* 右から20px */
-            z-index: 1000; /* 他の要素の上に表示 */
-            //box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 影で目立たせる */
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
             border-radius: 8px;
-            overflow: hidden; /* 角丸を適用 */
-	　　background-color: transparent;
+            overflow: hidden;
+	        background-color: transparent;
         }
 
-#copySelectedButton {
-            width: 60px;   /* 幅を固定 (例: 60px) */
-            height: 60px;  /* 高さを固定 (幅と同じにして正方形にする) */
-            padding: 0;    /* パディングを0にする（内容を中央に配置するため） */
+        #copySelectedButton {
+            width: 60px;
+            height: 60px;
+            padding: 0;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 50%; /* ★ここを50%に変更して円形にする★ */
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 0;  /* テキストを非表示にする（アイコンだけにする場合）*/
+            font-size: 0;
             font-weight: bold;
             transition: background-color 0.2s ease;
             display: flex;
-            align-items: center;      /* アイコンを縦方向中央に */
-            justify-content: center;  /* アイコンを横方向中央に */
-            /* gap: 10px; /* テキストがないので不要、削除しても良い */
+            align-items: center;
+            justify-content: center;
         }
 
-        /* アイコンのサイズを調整 */
         #copySelectedButton svg {
-            width: 28px; /* アイコンの幅 */
-            height: 28px; /* アイコンの高さ */
-            stroke: currentColor; /* アイコンの色をボタンの文字色に合わせる */
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
         }
 
         #copySelectedButton:hover {
@@ -189,10 +212,9 @@
         }
 
         #copySelectedButton.copied {
-            background-color: #28a745; /* コピー済み時の緑色 */
+            background-color: #28a745;
         }
 
-	/* ★★★ 新しく追加するCSS: 注意書きのボックス ★★★ */
 	.notes-box {
             background-color: #bfdeda;
             border: 1px solid #bfdeda;
@@ -201,7 +223,6 @@
             margin: 20px auto;
             max-width: 700px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            /* text-align: center; ← この行を削除しました */
         }
 
         .notes-box .note-item {
@@ -212,22 +233,43 @@
             text-align: left;
         }
 
-	/* ★★★ 新しく追加するCSS: フッターとコピーライト ★★★ */
-        footer {
-            margin-top: 50px; /* 上部に余白 */
+	    footer {
+            margin-top: 50px;
             padding: 20px;
-            background-color: #333; /* 暗い背景色 */
-            color: #f4f4f4; /* 明るい文字色 */
+            background-color: #333;
+            color: #f4f4f4;
             text-align: center;
-            font-size: 0.85em; /* 文字を少し小さく */
+            font-size: 0.85em;
             border-top: 1px solid #555;
-            clear: both; /* 他のfloat要素（もしあれば）の影響を受けないように */
+            clear: both;
         }
 
         footer p {
-            margin: 0; /* pタグのデフォルトマージンをリセット */
+            margin: 0;
             padding: 0;
         }
+
+	/* ボタンをまとめるグループのスタイル */
+	.buttons-group {
+    		display: flex;
+    		gap: 10px; /* ボタン間のスペース */
+			}
+
+	/* すべて解除ボタンのスタイル */
+	#unselectAllButton {
+   	 padding: 8px 15px;
+   	 background-color: #6c757d; /* selectAllButtonと同じ色 */
+   	 color: white;
+   	 border: none;
+   	 border-radius: 4px;
+   	 cursor: pointer;
+   	 white-space: nowrap;
+			}
+
+	#unselectAllButton:hover {
+    	background-color: #5a6268;
+			}
+
 
     </style>
 </head>
@@ -252,12 +294,13 @@
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         <div id="loadingMessage" style="display: none; text-align: center; margin-top: 20px; font-weight: bold; color: #16a693;">検索中…</div>
 
-        <div style="text-align: right; margin-bottom: 10px;">
-            <button id="selectAllButton" style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">すべて選択</button>
+        <div class="results-heading-row">
+            <h2>検索結果 (<span id="resultCount">0</span>句)</h2>
+            <div class="buttons-group"> <button id="selectAllButton">すべて選択</button>
+                <button id="unselectAllButton" style="margin-left: 10px;">すべて解除</button> </div>
         </div>
 
         <div id="results-container">
-            <h2>検索結果 (<span id="resultCount">0</span>句)</h2>
             <div id="searchResults">
                 <p class="no-results">検索結果はここに表示されます。</p>
             </div>
@@ -270,33 +313,31 @@
     </div>
 
     <script>
-        // ★★★ ここにGoogle Apps Scriptで取得した「ウェブアプリのURL」を貼り付けてください ★★★
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85XgkyyK6pSzrpm9j63T/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85XgkyyK6pSzrpm9j63T/exec'; // URLが正しく設定されているか確認してください
 
         document.getElementById('searchForm').addEventListener('submit', async function(event) {
-            event.preventDefault(); // フォームのデフォルト送信を防ぐ
+            event.preventDefault();
 
             const searchInput = document.getElementById('searchInput');
             const searchTerm = searchInput.value.trim();
             const searchResultsDiv = document.getElementById('searchResults');
-            const errorMessageDiv = document.getElementById('errorMessage'); // 正しく取得
+            const errorMessageDiv = document.getElementById('errorMessage');
             const resultCountSpan = document.getElementById('resultCount');
             const copySelectedButton = document.getElementById('copySelectedButton');
-            const loadingMessageDiv = document.getElementById('loadingMessage'); // 正しく取得
+            const loadingMessageDiv = document.getElementById('loadingMessage');
 
-            searchResultsDiv.innerHTML = ''; // 以前の結果をクリア
-            errorMessageDiv.style.display = 'none'; // エラーメッセージを隠す
-            resultCountSpan.textContent = '0'; // 件数をリセット
-            copySelectedButton.style.display = 'none'; // 検索結果がない場合は非表示にする
+            searchResultsDiv.innerHTML = '';
+            errorMessageDiv.style.display = 'none';
+            resultCountSpan.textContent = '0';
+            copySelectedButton.style.display = 'none';
 
             if (!searchTerm) {
                 searchResultsDiv.innerHTML = '<p class="no-results">検索キーワードを入力してください。</p>';
-                loadingMessageDiv.style.display = 'none'; // 検索キーワードがない場合もローディングは非表示に
+                loadingMessageDiv.style.display = 'none';
                 return;
             }
 
-            loadingMessageDiv.style.display = 'block'; // ローディングメッセージを表示
-
+            loadingMessageDiv.style.display = 'block';
 
             try {
                 const response = await fetch(`${WEB_APP_URL}?q=${encodeURIComponent(searchTerm)}`);
@@ -307,22 +348,13 @@
 
                 const data = await response.json();
 
-                // 検索成功時にローディングメッセージを非表示
                 loadingMessageDiv.style.display = 'none';
 
-                // 季節の表示順を定義
                 const seasonOrder = {
-                    '新年': 0,
-                    '春': 1,
-                    '夏': 2,
-                    '秋': 3,
-                    '冬': 4,
-                    '入力無': 5,
+                    '新年': 0, '春': 1, '夏': 2, '秋': 3, '冬': 4, '入力無': 5,
                 };
 
-                // 検索結果データをソート
                 data.sort((a, b) => {
-                    // 1. 詠まれた年（年代）でソート
                     const yearA = parseInt(a.fullRow['詠まれた年']) || Infinity;
                     const yearB = parseInt(b.fullRow['詠まれた年']) || Infinity;
 
@@ -330,7 +362,6 @@
                         return yearA - yearB;
                     }
 
-                    // 2. 年代が同じ場合、季節でソート
                     const seasonA = a.fullRow['季節'] || '入力無';
                     const seasonB = b.fullRow['季節'] || '入力無';
 
@@ -343,31 +374,29 @@
                 if (data.error) {
                     errorMessageDiv.textContent = `エラー: ${data.error}`;
                     errorMessageDiv.style.display = 'block';
-                    searchResultsDiv.innerHTML = ''; // 結果をクリア
+                    searchResultsDiv.innerHTML = '';
                     resultCountSpan.textContent = '0';
-                    copySelectedButton.style.display = 'none'; // エラー時も非表示
+                    copySelectedButton.style.display = 'none';
                     return;
                 }
 
-                resultCountSpan.textContent = data.length; // 検索結果の件数を表示
+                resultCountSpan.textContent = data.length;
 
                 if (data.length === 0) {
                     searchResultsDiv.innerHTML = '<p class="no-results">一致するデータは見つかりませんでした。</p>';
-                    copySelectedButton.style.display = 'none'; // 0件の時も非表示
+                    copySelectedButton.style.display = 'none';
                 } else {
-                    copySelectedButton.style.display = 'flex'; // 結果がある場合は表示
+                    copySelectedButton.style.display = 'flex';
 
                     data.forEach(item => {
                         const itemDiv = document.createElement('div');
                         itemDiv.classList.add('result-item');
                         
-                        // 一致したセルを表示（チェックボックス付き）
                         const matchedCellsSection = document.createElement('div');
                         item.matchedCells.forEach((cell, cellIndex) => {
                             const cellDiv = document.createElement('div');
                             cellDiv.classList.add('matched-cell');
 
-                            // 季節によるクラスの割り当て
                             const season = item.fullRow['季節'];
                             let seasonClass = 'season-default';
 
@@ -383,7 +412,6 @@
                             }
                             cellDiv.classList.add(seasonClass);
 
-                            // チェックボックスを作成
                             const checkbox = document.createElement('input');
                             checkbox.type = 'checkbox';
                             checkbox.id = `cell-${item.rowIndex}-${cellIndex}`;
@@ -391,7 +419,6 @@
                             checkbox.classList.add('copy-checkbox');
                             cellDiv.appendChild(checkbox);
 
-			　　// セルの中身を表示（labelでチェックボックスと関連付け）
                             const cellLabel = document.createElement('label');
                             cellLabel.htmlFor = checkbox.id;
                             cellLabel.innerHTML = `${cell.value || ''}`;
@@ -403,27 +430,23 @@
                             itemDiv.appendChild(matchedCellsSection);
                         }
 
-                        // 行全体のデータを表示
                         const fullRowSection = document.createElement('div');
                         fullRowSection.classList.add('full-row-data');
                         
                         const columnsToDisplay = ['季節','詠まれた年','前書き,場所など'];
 
-                        let hasFullRowDataToDisplay = false; // fullRowSectionを表示するかどうかのフラグ
+                        let hasFullRowDataToDisplay = false;
 
                         columnsToDisplay.forEach(header => {
-                            const value = item.fullRow[header]; // 列の値を取得
+                            const value = item.fullRow[header];
 
-                            // この段落を表示するかどうかのフラグ
                             let shouldDisplayParagraph = false;
 
                             if (header === '前書き,場所など') {
-                                // '前書き,場所など' の場合、値が空でない（null, undefined, 空文字列, 全て空白でない）場合のみ表示
                                 if (value !== undefined && value !== null && String(value).trim() !== '') {
                                     shouldDisplayParagraph = true;
                                 }
                             } else {
-                                // 他のヘッダー（'詠まれた年', '季節'）の場合、プロパティが存在すれば表示（元のロジック通り）
                                 if (item.fullRow.hasOwnProperty(header)) {
                                     shouldDisplayParagraph = true;
                                 }
@@ -433,7 +456,7 @@
                                 const p = document.createElement('p');
                                 p.textContent = `${header}: ${value}`;
                                 fullRowSection.appendChild(p);
-                                hasFullRowDataToDisplay = true; // 何らかのデータが表示されるのでtrue
+                                hasFullRowDataToDisplay = true;
                             }
                         });
 
@@ -446,14 +469,13 @@
                 }
 
             } catch (error) {
-                // 検索失敗時（エラー時）にもローディングメッセージを非表示
                 loadingMessageDiv.style.display = 'none';
                 console.error('検索エラー:', error);
                 errorMessageDiv.textContent = `検索中にエラーが発生しました: ${error.message}`;
                 errorMessageDiv.style.display = 'block';
-                searchResultsDiv.innerHTML = ''; // 結果をクリア
+                searchResultsDiv.innerHTML = '';
                 resultCountSpan.textContent = '0';
-                copySelectedButton.style.display = 'none'; // エラー時も非表示
+                copySelectedButton.style.display = 'none';
             }
         });
 
@@ -498,6 +520,17 @@
                 });
             });
         });
+
+            // ★★★ここから追加：「すべて解除」ボタンのイベントリスナー★★★
+            document.getElementById('unselectAllButton').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.copy-checkbox'); // すべてのチェックボックスを取得
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false; // チェックをOFFにする
+                });
+            });
+            // ★★★ここまで追加★★★
+
+
     </script>
     <footer>
         <p>&copy; 2025 碧梧桐探訪舎 All Rights Reserved.</p>
