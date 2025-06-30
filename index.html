@@ -77,17 +77,40 @@
             margin-bottom: 15px; /* 下の検索結果との余白 */
             padding-top: 20px; /* 上部の余白 */
             border-top: 1px solid #eee; /* 上部に区切り線 */
+            flex-wrap: wrap; /* ★追加: 画面幅が狭い場合に要素を改行させる */
         }
         .results-heading-row h2 {
              color: #555;
              margin-bottom: 0; /* h2のデフォルト下マージンをリセット */
+             white-space: nowrap; /* ★追加: 「検索結果 (0句)」のテキストが改行されないようにする */
         }
 
-        #results-container {
-            /* padding-top: 20px; /* この行は .results-heading-row に移動したので、削除またはコメントアウト */
-            padding-top: 0; /* .results-heading-row で既に余白と線があるので、ここでは0で良い */
+        /* スマートフォンなど、画面幅が狭い場合のレイアウト調整 */
+        @media (max-width: 600px) {
+            .results-heading-row {
+                justify-content: flex-start; /* ★変更: 左寄せにする */
+                gap: 0; /* ★追加: gapは子要素で制御 */
+            }
+            .results-heading-row h2 {
+                margin-bottom: 10px; /* ★追加: ボタンが下に改行した際にh2の下に余白 */
+                margin-right: 0; /* 横並び時の右マージンは不要になる */
+                width: 100%; /* ★追加: 常に一行使うようにする */
+                text-align: left; /* ★追加: 見出しを左寄せに */
+            }
+            .buttons-group {
+                width: 100%; /* ★追加: ボタン群も常に一行使うようにする */
+                justify-content: flex-start; /* ★追加: ボタン群を左寄せに */
+            }
         }
 
+
+        /* ボタンをまとめるグループのスタイル */
+        .buttons-group {
+            display: flex;
+            gap: 10px; /* ボタン間のスペース */
+        }
+
+        /* selectAllButton のスタイル */
         #selectAllButton {
             padding: 8px 15px;
             background-color: #6c757d;
@@ -99,6 +122,23 @@
         }
         #selectAllButton:hover {
             background-color: #5a6268;
+        }
+        /* unselectAllButton のスタイル */
+        #unselectAllButton {
+            padding: 8px 15px;
+            background-color: #6c757d; /* selectAllButtonと同じ色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #unselectAllButton:hover {
+            background-color: #5a6268;
+        }
+
+        #results-container {
+            padding-top: 0; /* .results-heading-row で既に余白と線があるので、ここでは0で良い */
         }
 
         .result-item {
@@ -249,28 +289,6 @@
             padding: 0;
         }
 
-	/* ボタンをまとめるグループのスタイル */
-	.buttons-group {
-    		display: flex;
-    		gap: 10px; /* ボタン間のスペース */
-			}
-
-	/* すべて解除ボタンのスタイル */
-	#unselectAllButton {
-   	 padding: 8px 15px;
-   	 background-color: #6c757d; /* selectAllButtonと同じ色 */
-   	 color: white;
-   	 border: none;
-   	 border-radius: 4px;
-   	 cursor: pointer;
-   	 white-space: nowrap;
-			}
-
-	#unselectAllButton:hover {
-    	background-color: #5a6268;
-			}
-
-
     </style>
 </head>
 <body>
@@ -297,9 +315,8 @@
         <div class="results-heading-row">
             <h2>検索結果 (<span id="resultCount">0</span>句)</h2>
             <div class="buttons-group"> <button id="selectAllButton">すべて選択</button>
-                <button id="unselectAllButton" style="margin-left: 10px;">すべて解除</button> </div>
+                <button id="unselectAllButton">すべて解除</button> </div>
         </div>
-
         <div id="results-container">
             <div id="searchResults">
                 <p class="no-results">検索結果はここに表示されます。</p>
@@ -313,7 +330,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85XgkyyK6pSzrpm9j63T/exec'; // URLが正しく設定されているか確認してください
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzwyjIkxCkiDuxtCYUcDGdCZO8bFIUJIqiyToPQb8DAqJdz85gkyyK6pSzrpm9j63T/exec'; // URLが正しく設定されているか確認してください
 
         document.getElementById('searchForm').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -513,24 +530,23 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('copySelectedButton').style.display = 'none';
+            
+            // 「すべて選択」ボタンのイベントリスナー
             document.getElementById('selectAllButton').addEventListener('click', () => {
                 const checkboxes = document.querySelectorAll('.copy-checkbox');
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = true;
                 });
             });
-        });
 
-            // ★★★ここから追加：「すべて解除」ボタンのイベントリスナー★★★
+            // 「すべて解除」ボタンのイベントリスナー
             document.getElementById('unselectAllButton').addEventListener('click', () => {
-                const checkboxes = document.querySelectorAll('.copy-checkbox'); // すべてのチェックボックスを取得
+                const checkboxes = document.querySelectorAll('.copy-checkbox');
                 checkboxes.forEach(checkbox => {
-                    checkbox.checked = false; // チェックをOFFにする
+                    checkbox.checked = false;
                 });
             });
-            // ★★★ここまで追加★★★
-
-
+        });
     </script>
     <footer>
         <p>&copy; 2025 碧梧桐探訪舎 All Rights Reserved.</p>
