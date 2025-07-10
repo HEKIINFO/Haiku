@@ -69,6 +69,28 @@
             background-color: #195c53;
         }
 
+        /* 新しいランダム検索ボタンを囲むdiv */
+        .random-button-container {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* 新しいランダム検索ボタンのスタイル */
+        #randomSearchButton {
+            padding: 10px 20px;
+            background-color: #ace6cc; /* 緑色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+        #randomSearchButton:hover {
+            background-color: #6a9180; /* ホバーで少し濃い緑 */
+        }
+
         /* 検索結果見出しとボタンをまとめるスタイル */
         .results-heading-row {
             display: flex; /* Flexboxを有効にする */
@@ -77,29 +99,29 @@
             margin-bottom: 15px; /* 下の検索結果との余白 */
             padding-top: 20px; /* 上部の余白 */
             border-top: 1px solid #eee; /* 上部に区切り線 */
-            flex-wrap: wrap; /* ★追加: 画面幅が狭い場合に要素を改行させる */
+            flex-wrap: wrap; /* 画面幅が狭い場合に要素を改行させる */
         }
         .results-heading-row h2 {
              color: #555;
              margin-bottom: 0; /* h2のデフォルト下マージンをリセット */
-             white-space: nowrap; /* ★追加: 「検索結果 (0句)」のテキストが改行されないようにする */
+             white-space: nowrap; /* 「検索結果 (0句)」のテキストが改行されないようにする */
         }
 
         /* スマートフォンなど、画面幅が狭い場合のレイアウト調整 */
         @media (max-width: 600px) {
             .results-heading-row {
-                justify-content: flex-start; /* ★変更: 左寄せにする */
-                gap: 0; /* ★追加: gapは子要素で制御 */
+                justify-content: flex-start; /* 左寄せにする */
+                gap: 0; /* gapは子要素で制御 */
             }
             .results-heading-row h2 {
-                margin-bottom: 10px; /* ★追加: ボタンが下に改行した際にh2の下に余白 */
+                margin-bottom: 10px; /* ボタンが下に改行した際にh2の下に余白 */
                 margin-right: 0; /* 横並び時の右マージンは不要になる */
-                width: 100%; /* ★追加: 常に一行使うようにする */
-                text-align: left; /* ★追加: 見出しを左寄せに */
+                width: 100%; /* 常に一行使うようにする */
+                text-align: left; /* 見出しを左寄せに */
             }
             .buttons-group {
-                width: 100%; /* ★追加: ボタン群も常に一行使うようにする */
-                justify-content: flex-start; /* ★追加: ボタン群を左寄せに */
+                width: 100%; /* ボタン群も常に一行使うようにする */
+                justify-content: flex-start; /* ボタン群を左寄せに */
             }
         }
 
@@ -309,14 +331,20 @@
             <button type="submit">検索</button>
         </form>
 
+        <div class="random-button-container">
+            <button id="randomSearchButton">ランダム検索</button>
+        </div>
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         <div id="loadingMessage" style="display: none; text-align: center; margin-top: 20px; font-weight: bold; color: #16a693;">検索中…</div>
 
         <div class="results-heading-row">
             <h2>検索結果 (<span id="resultCount">0</span>句)</h2>
-            <div class="buttons-group"> <button id="selectAllButton">すべて選択</button>
-                <button id="unselectAllButton">すべて解除</button> </div>
+            <div class="buttons-group">
+                <button id="selectAllButton">すべて選択</button>
+                <button id="unselectAllButton">すべて解除</button>
+            </div>
         </div>
+
         <div id="results-container">
             <div id="searchResults">
                 <p class="no-results">検索結果はここに表示されます。</p>
@@ -495,6 +523,145 @@
                 copySelectedButton.style.display = 'none';
             }
         });
+
+        // ランダム検索ボタンのイベントリスナー
+        document.getElementById('randomSearchButton').addEventListener('click', async () => {
+            const searchResultsDiv = document.getElementById('searchResults');
+            const errorMessageDiv = document.getElementById('errorMessage');
+            const resultCountSpan = document.getElementById('resultCount');
+            const copySelectedButton = document.getElementById('copySelectedButton');
+            const loadingMessageDiv = document.getElementById('loadingMessage');
+
+            searchResultsDiv.innerHTML = '';
+            errorMessageDiv.style.display = 'none';
+            resultCountSpan.textContent = '0';
+            copySelectedButton.style.display = 'none';
+            loadingMessageDiv.style.display = 'block';
+
+            try {
+                // バックエンドで全件取得やランダム取得が直接できないため、
+                // 非常に一般的な単語（例: 「句」）で検索して、その結果からランダムに1つ選びます。
+                // データ量が多い場合、この検索にも時間がかかることがあります。
+                const response = await fetch(`${WEB_APP_URL}?q=${encodeURIComponent('句')}`); // 「句」で検索
+
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー！ステータス: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                loadingMessageDiv.style.display = 'none';
+
+                if (data.error) {
+                    errorMessageDiv.textContent = `エラー: ${data.error}`;
+                    errorMessageDiv.style.display = 'block';
+                    searchResultsDiv.innerHTML = '';
+                    resultCountSpan.textContent = '0';
+                    copySelectedButton.style.display = 'none';
+                    return;
+                }
+
+                if (data.length === 0) {
+                    searchResultsDiv.innerHTML = '<p class="no-results">ランダムな結果が見つかりませんでした。</p>';
+                    copySelectedButton.style.display = 'none';
+                } else {
+                    // 取得した結果の中からランダムに1つ選択
+                    const randomIndex = Math.floor(Math.random() * data.length);
+                    const randomItem = data[randomIndex];
+
+                    resultCountSpan.textContent = '1'; // 1件のみ表示
+                    copySelectedButton.style.display = 'flex'; // コピーボタンを表示
+
+                    // 選択された1件のみを表示するロジック
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('result-item');
+                    
+                    const matchedCellsSection = document.createElement('div');
+                    randomItem.matchedCells.forEach((cell, cellIndex) => {
+                        const cellDiv = document.createElement('div');
+                        cellDiv.classList.add('matched-cell');
+
+                        const season = randomItem.fullRow['季節'];
+                        let seasonClass = 'season-default';
+
+                        if (season) {
+                            switch (season) {
+                                case '新年': seasonClass = 'season-shinnen'; break;
+                                case '春': seasonClass = 'season-haru'; break;
+                                case '夏': seasonClass = 'season-natsu'; break;
+                                case '秋': seasonClass = 'season-aki'; break;
+                                case '冬': seasonClass = 'season-fuyu'; break;
+                                default: seasonClass = 'season-default';
+                            }
+                        }
+                        cellDiv.classList.add(seasonClass);
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `cell-${randomItem.rowIndex}-${cellIndex}`;
+                        checkbox.value = cell.value;
+                        checkbox.classList.add('copy-checkbox');
+                        cellDiv.appendChild(checkbox);
+
+                        const cellLabel = document.createElement('label');
+                        cellLabel.htmlFor = checkbox.id;
+                        cellLabel.innerHTML = `${cell.value || ''}`;
+                        cellDiv.appendChild(cellLabel);
+                        
+                        matchedCellsSection.appendChild(cellDiv);
+                    });
+                    if (randomItem.matchedCells.length > 0) {
+                        itemDiv.appendChild(matchedCellsSection);
+                    }
+
+                    const fullRowSection = document.createElement('div');
+                    fullRowSection.classList.add('full-row-data');
+                    
+                    const columnsToDisplay = ['季節','詠まれた年','前書き,場所など'];
+
+                    let hasFullRowDataToDisplay = false;
+
+                    columnsToDisplay.forEach(header => {
+                        const value = randomItem.fullRow[header];
+
+                        let shouldDisplayParagraph = false;
+
+                        if (header === '前書き,場所など') {
+                            if (value !== undefined && value !== null && String(value).trim() !== '') {
+                                shouldDisplayParagraph = true;
+                            }
+                        } else {
+                            if (randomItem.fullRow.hasOwnProperty(header)) {
+                                shouldDisplayParagraph = true;
+                            }
+                        }
+
+                        if (shouldDisplayParagraph) {
+                            const p = document.createElement('p');
+                            p.textContent = `${header}: ${value}`;
+                            fullRowSection.appendChild(p);
+                            hasFullRowDataToDisplay = true;
+                        }
+                    });
+
+                    if (hasFullRowDataToDisplay) {
+                        itemDiv.appendChild(fullRowSection);
+                    }
+                    
+                    searchResultsDiv.appendChild(itemDiv); // ランダムに選択された1件のみを表示
+                }
+
+            } catch (error) {
+                loadingMessageDiv.style.display = 'none';
+                console.error('ランダム検索エラー:', error);
+                errorMessageDiv.textContent = `ランダム検索中にエラーが発生しました: ${error.message}`;
+                errorMessageDiv.style.display = 'block';
+                searchResultsDiv.innerHTML = '';
+                resultCountSpan.textContent = '0';
+                copySelectedButton.style.display = 'none';
+            }
+        });
+
 
         document.getElementById('copySelectedButton').addEventListener('click', async () => {
             const checkboxes = document.querySelectorAll('.copy-checkbox:checked');
